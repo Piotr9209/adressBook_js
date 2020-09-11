@@ -948,8 +948,6 @@ var _createClass = function () { function defineProperties(target, props) { for 
 
 var _uuid = __webpack_require__(/*! uuid */ "./node_modules/uuid/dist/esm-browser/index.js");
 
-function _toArray(arr) { return Array.isArray(arr) ? arr : Array.from(arr); }
-
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
 var Validator = function () {
@@ -987,137 +985,46 @@ var Validator = function () {
     return Validator;
 }();
 
-// książka adresowa 
-// Ma mieć: listę wszystkich kontaktów, listę grup kontaktów.
-// Ma umożliwiać: można szukać kontaktu po frazie, można dodać kontakt do grupy
-
-
 var AddressBook = function () {
     function AddressBook() {
         _classCallCheck(this, AddressBook);
 
         this.listOfContacts = [];
-        this.listOfGroups = []; //with contact
-        this.listOfContactsInGroups = [];
+        this.listOfGroups = [];
     }
 
     _createClass(AddressBook, [{
-        key: 'hasContactAlreadyExist',
-        value: function hasContactAlreadyExist(contact) {
-            //sprawdz czy kontakt juz istnieje
-        }
-    }, {
-        key: 'hasGroupAlreadyExist',
-        value: function hasGroupAlreadyExist(group) {}
-        //sprawdz czy grupa istnieje
-
-
-        //nazwa args arrayOfContacts
-
-    }, {
         key: 'addContacts',
         value: function addContacts() {
             var _this = this;
 
-            for (var _len = arguments.length, objContact = Array(_len), _key = 0; _key < _len; _key++) {
-                objContact[_key] = arguments[_key];
+            for (var _len = arguments.length, arrayOfContacts = Array(_len), _key = 0; _key < _len; _key++) {
+                arrayOfContacts[_key] = arguments[_key];
             }
 
-            objContact.forEach(function (elContact) {
-                if (!Validator.isContact(elContact)) throw new Error('contact doesn\'t includes to class Contact');
-                _this.listOfContacts.push(elContact);
-            });
-        }
-
-        //nigdy nie dodajemy wielu grup - zawsze dodajemy jedna grupe
-
-    }, {
-        key: 'addGroups',
-        value: function addGroups() {
-            var _this2 = this;
-
-            for (var _len2 = arguments.length, objGroupContact = Array(_len2), _key2 = 0; _key2 < _len2; _key2++) {
-                objGroupContact[_key2] = arguments[_key2];
-            }
-
-            objGroupContact.forEach(function (elGroup) {
-                if (!Validator.isGroupContact(elGroup)) throw new Error('group contact doesn\'t includes to class Group Contact');
-                _this2.listOfGroups.push(elGroup);
-            });
-        }
-    }, {
-        key: 'addContactsToGroup',
-        value: function addContactsToGroup(objGroupName, _ref) {
-            var _ref2 = _toArray(_ref),
-                objContact = _ref2.slice(0);
-
-            if (!Validator.isGroupContact(objGroupName)) return false;
-            var currentGroupName = this.listOfContactsInGroups.find(function (el) {
-                return el.group.uuid === objGroupName.uuid;
-            });
-            if (typeof currentGroupName === 'undefined') {
-                this.listOfContactsInGroups.push({
-                    'group': objGroupName,
-                    'contacts': objContact.filter(function (el) {
-                        return el instanceof Contact;
-                    })
-                });
-            } else {
-                objContact.forEach(function (el) {
-                    if (!currentGroupName.contacts.find(function (elFind) {
-                        return elFind.uuid === el.uuid;
-                    }) && el instanceof Contact) {
-                        currentGroupName.contacts.push(el);
-                    }
-                });
-            }
-        }
-    }, {
-        key: 'removeContactFromGroup',
-        value: function removeContactFromGroup() {
-            var _this3 = this;
-
-            console.log("listOfGroupInCon=>", this.listOfContactsInGroups);
-
-            for (var _len3 = arguments.length, objContact = Array(_len3), _key3 = 0; _key3 < _len3; _key3++) {
-                objContact[_key3] = arguments[_key3];
-            }
-
-            objContact.forEach(function (contact) {
-                _this3.listOfContactsInGroups.contacts = _this3.listOfContactsInGroups.map(function (el) {
-                    return el.contacts.filter(function (element) {
-                        return element.uuid !== contact.uuid;
-                    });
-                });
-            });
-            // const res = this.listOfContactsInGroups.map(el => el.contacts.filter(element => element.uuid !== objContact.uuid))
-            console.log("listOfGroupInCon po filter=>", this.listOfContactsInGroups);
-            // console.log("const res=>", res)
-        }
-    }, {
-        key: 'removeContact',
-        value: function removeContact() {
-            var _this4 = this;
-
-            for (var _len4 = arguments.length, objContact = Array(_len4), _key4 = 0; _key4 < _len4; _key4++) {
-                objContact[_key4] = arguments[_key4];
-            }
-
-            objContact.forEach(function (elContact) {
-                if (!Validator.isContact(elContact) && !_this4.listOfContacts.find(function (elFin) {
-                    return elFin.uuid === elContact.uuid;
+            arrayOfContacts.forEach(function (contact) {
+                if (!Validator.isContact(contact)) return 'contact doesn\'t includes to class Contact';
+                if (!_this.listOfContacts.find(function (contactFind) {
+                    return contactFind.uuid === contact.uuid;
                 })) {
-                    return false;
+                    _this.listOfContacts.push(contact);
                 } else {
-                    _this4.listOfContacts = _this4.listOfContacts.filter(function (ele) {
-                        return ele.uuid !== elContact.uuid;
-                    });
+                    return 'contact is in list of contacts';
                 }
             });
         }
-
-        //tu korzystam z listy group ktore juz dodalem 
-
+    }, {
+        key: 'addGroups',
+        value: function addGroups(groupContact) {
+            if (!Validator.isGroupContact(groupContact)) return 'group doesn\'t includes to class group Contact';
+            if (!this.listOfGroups.find(function (group) {
+                return group.uuid === groupContact.uuid;
+            })) {
+                this.listOfGroups.push(groupContact);
+            } else {
+                return 'group is in list of';
+            }
+        }
     }, {
         key: 'searchContactFromPhrase',
         value: function searchContactFromPhrase(phrase) {
@@ -1128,15 +1035,22 @@ var AddressBook = function () {
                 return contact.name.toLowerCase().includes(phrase.toLowerCase()) || contact.surname.toLowerCase().includes(phrase.toLowerCase()) || contact.email.toLowerCase().includes(phrase.toLowerCase());
             });
         }
+    }, {
+        key: 'searchContact',
+        value: function searchContact(phrase) {
+            return this.listOfGroups.map(function (contact) {
+                return contact.contacts.filter(function (contactSearch) {
+                    if (phrase.length < 0 && typeof phrase !== "string") {
+                        return 'args not found';
+                    }
+                    return contactSearch.name.toLowerCase().includes(phrase.toLowerCase()) || contactSearch.surname.toLowerCase().includes(phrase.toLowerCase()) || contactSearch.email.toLowerCase().includes(phrase.toLowerCase());
+                });
+            });
+        }
     }]);
 
     return AddressBook;
 }();
-
-//     Obiekt charakteryzujący pojedyńczy kontak:
-//     Ma mieć: Imie, Nazwisko, adres - emial, datę modyfikacji / utworzenia, uuid
-// Ma umożliwiać: aktualizację datę modyfikacji, wyświetlać
-// w odpowiednim formacie przy wywołaniu, pozwalac na modyfikację imienia, nazwiska oraz adresu email
 
 var Contact = function () {
     function Contact(name, surname, email) {
@@ -1181,9 +1095,6 @@ var Contact = function () {
 
     return Contact;
 }();
-// Obiekt charakteryzujący grupę kontaktów:
-//     Ma mieć: listę kontaktów
-// Ma umożliwiać: Można zmienić nazwę grupy, można dodać lub usunac kontakt z grupy "
 
 var GroupContact = function () {
     function GroupContact(nameGroup) {
@@ -1192,35 +1103,50 @@ var GroupContact = function () {
         Validator.isEmptyString(nameGroup);
         this.uuid = (0, _uuid.v4)();
         this.name = nameGroup;
-        // this.contacts = [] //wrzucam kontakty które przypisuje do grupy];
+        this.contacts = [];
     }
-    // TO REMOVE:
-    // addToGroup(...objContact) {
-    //     objContact.forEach(el => {
-    //         if (!Validator.isContact(el)) throw new Error(`obj contact doesnt't instance of class Contact`);
-    //         this.contactsInGroup.push(el);
-    //     })
-    // }
-
 
     _createClass(GroupContact, [{
-        key: 'isContactInGroup',
-        value: function isContactInGroup(contactToCheck) {
-            // sprawdzenie czy kontakt istnieje
-        }
-    }, {
         key: 'addContacts',
-        value: function addContacts(contact) {
-            //  validacja
-            //this.isContactInGroup()
-            //push kontakt
+        value: function addContacts() {
+            var _this2 = this;
+
+            for (var _len2 = arguments.length, contacts = Array(_len2), _key2 = 0; _key2 < _len2; _key2++) {
+                contacts[_key2] = arguments[_key2];
+            }
+
+            contacts.forEach(function (contact) {
+                if (!Validator.isContact(contact)) return 'contact doesn\'t includes in object Contact';
+                if (!_this2.contacts.find(function (contactFind) {
+                    return contactFind.uuid === contact.uuid;
+                })) {
+                    _this2.contacts.push(contact);
+                } else {
+                    return 'contact is in a group';
+                }
+            });
         }
     }, {
         key: 'remove',
-        value: function remove(contact) {
-            // validacja
-            //this.isContactInGroup(contact)
-            //filter !== contact.uuid
+        value: function remove() {
+            var _this3 = this;
+
+            for (var _len3 = arguments.length, contacts = Array(_len3), _key3 = 0; _key3 < _len3; _key3++) {
+                contacts[_key3] = arguments[_key3];
+            }
+
+            contacts.forEach(function (contact) {
+                if (!Validator.isContact(contact)) return 'contact doesn\'t includes in object Contact';
+                if (_this3.contacts.find(function (contactFind) {
+                    return contactFind.uuid === contact.uuid;
+                })) {
+                    _this3.contacts = _this3.contacts.filter(function (contacRemove) {
+                        return contacRemove.uuid !== contact.uuid;
+                    });
+                } else {
+                    return 'contact doesn\'t includes to list contacts';
+                }
+            });
         }
     }, {
         key: 'changeNameGroup',
@@ -1237,23 +1163,25 @@ var contact = new Contact('Piotr', "J", 'p.j@gmail.com');
 var contact2 = new Contact('Jarek', 'Michalczewsk', 'JM@interia.pl');
 var contact3 = new Contact('Darek', 'fdsfds', 'ewrw@interia.pl');
 var contact4 = new Contact('jacenty', 'zbysiu', 'KarolJM@interia.pl');
-var contact5 = new Contact('rodzinaName', 'zbysiu', 'KarolJM@interia.pl');
-var contact6 = new Contact('kuzyniName', 'zbysiu', 'KarolJM@interia.pl');
+var contact5 = new Contact('Marek', 'kowal', 'MAW@interia.pl');
+var contact6 = new Contact('Mariusz', 'karnia', 'MKA@gmail.pl');
 
 var groupFriends = new GroupContact('znajomi');
 var groupFamily = new GroupContact('rodzina');
-var groupFamily2 = new GroupContact('rodzina2');
+var groupWork = new GroupContact('praca');
 
-var adressBook = new AddressBook();
-adressBook.addContacts(contact, contact2, contact3, contact4, contact5, contact6);
-adressBook.addGroups(groupFriends);
-adressBook.addContactsToGroup(groupFriends, [contact]);
-adressBook.addContactsToGroup(groupFriends, [contact2, contact3]);
+groupFriends.addContacts(contact, contact2, contact3);
+groupFamily.addContacts(contact3, contact4);
+groupWork.addContacts(contact6, contact5);
+groupFriends.remove(contact2);
+groupFriends.remove(contact);
 
-adressBook.addContactsToGroup(groupFamily, [contact5, contact4, contact3]);
-adressBook.addContactsToGroup(groupFamily2, [contact5]);
-adressBook.removeContactFromGroup(contact5, contact3);
-console.log(adressBook);
+var addressBook = new AddressBook();
+addressBook.addContacts(contact, contact2, contact3, contact4, contact5, contact6);
+addressBook.addContacts(contact, contact2, contact3, contact4, contact5, contact6);
+addressBook.addGroups(groupFriends);
+addressBook.addGroups(groupFamily);
+addressBook.addGroups(groupWork);
 
 /***/ })
 

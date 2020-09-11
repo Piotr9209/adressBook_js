@@ -41,80 +41,31 @@ class Validator {
     }
 }
 
-// książka adresowa 
-// Ma mieć: listę wszystkich kontaktów, listę grup kontaktów.
-// Ma umożliwiać: można szukać kontaktu po frazie, można dodać kontakt do grupy
 class AddressBook {
     constructor() {
         this.listOfContacts = [];
-        this.listOfGroups = []; //with contact
-        this.listOfContactsInGroups = [];
+        this.listOfGroups = [];
     }
 
-    hasContactAlreadyExist(contact) {
-        //sprawdz czy kontakt juz istnieje
-    }
-    hasGroupAlreadyExist(group) {
-        //sprawdz czy grupa istnieje
-    }
-
-    //nazwa args arrayOfContacts
-    addContacts(...objContact) {
-        objContact.forEach(elContact => {
-            if (!Validator.isContact(elContact)) throw new Error(`contact doesn't includes to class Contact`);
-            this.listOfContacts.push(elContact);
-        })
-    }
-
-    //nigdy nie dodajemy wielu grup - zawsze dodajemy jedna grupe
-    addGroups(...objGroupContact) {
-        objGroupContact.forEach(elGroup => {
-            if (!Validator.isGroupContact(elGroup)) throw new Error(`group contact doesn't includes to class Group Contact`)
-            this.listOfGroups.push(elGroup);
-        })
-    }
-
-    addContactsToGroup(objGroupName, [...objContact]) {
-        if (!Validator.isGroupContact(objGroupName)) return false;
-        const currentGroupName = this.listOfContactsInGroups.find(el => el.group.uuid === objGroupName.uuid)
-        if (typeof currentGroupName === 'undefined') {
-            this.listOfContactsInGroups.push({
-                'group': objGroupName,
-                'contacts': objContact.filter(el => el instanceof Contact)
-            })
-        } else {
-            objContact.forEach(el => {
-                if (!currentGroupName.contacts.find(elFind => elFind.uuid === el.uuid) && el instanceof Contact) {
-                    currentGroupName.contacts.push(el);
-                }
-            })
-        }
-    }
-
-    removeContactFromGroup(...objContact) {
-        console.log("listOfGroupInCon=>", this.listOfContactsInGroups)
-        objContact.forEach(contact => {
-            this.listOfContactsInGroups.contacts = this.listOfContactsInGroups.map(el => el.contacts.filter(element => element.uuid !== contact.uuid))
-        })
-        // const res = this.listOfContactsInGroups.map(el => el.contacts.filter(element => element.uuid !== objContact.uuid))
-        console.log("listOfGroupInCon po filter=>", this.listOfContactsInGroups)
-        // console.log("const res=>", res)
-    }
-
-
-    removeContact(...objContact) {
-        objContact.forEach(elContact => {
-            if (!Validator.isContact(elContact) && !this.listOfContacts.find(elFin => elFin.uuid === elContact.uuid)) {
-                return false
+    addContacts(...arrayOfContacts) {
+        arrayOfContacts.forEach(contact => {
+            if (!Validator.isContact(contact)) return (`contact doesn't includes to class Contact`);
+            if (!this.listOfContacts.find(contactFind => contactFind.uuid === contact.uuid)) {
+                this.listOfContacts.push(contact);
             } else {
-                this.listOfContacts = this.listOfContacts.filter(ele => ele.uuid !== elContact.uuid)
+                return 'contact is in list of contacts'
             }
         })
     }
 
-
-
-    //tu korzystam z listy group ktore juz dodalem 
+    addGroups(groupContact) {
+        if (!Validator.isGroupContact(groupContact)) return (`group doesn't includes to class group Contact`)
+        if (!this.listOfGroups.find(group => group.uuid === groupContact.uuid)) {
+            this.listOfGroups.push(groupContact)
+        } else {
+            return (`group is in list of`)
+        }
+    }
 
     searchContactFromPhrase(phrase) {
         return this.listOfContacts.filter(contact => {
@@ -124,12 +75,18 @@ class AddressBook {
             return contact.name.toLowerCase().includes(phrase.toLowerCase()) || contact.surname.toLowerCase().includes(phrase.toLowerCase()) || contact.email.toLowerCase().includes(phrase.toLowerCase());
         })
     }
-}
 
-//     Obiekt charakteryzujący pojedyńczy kontak:
-//     Ma mieć: Imie, Nazwisko, adres - emial, datę modyfikacji / utworzenia, uuid
-// Ma umożliwiać: aktualizację datę modyfikacji, wyświetlać
-// w odpowiednim formacie przy wywołaniu, pozwalac na modyfikację imienia, nazwiska oraz adresu email
+    searchContact(phrase) {
+        return this.listOfGroups.map(contact => {
+            return contact.contacts.filter(contactSearch => {
+                if (phrase.length < 0 && typeof phrase !== "string") {
+                    return `args not found`
+                }
+                return contactSearch.name.toLowerCase().includes(phrase.toLowerCase()) || contactSearch.surname.toLowerCase().includes(phrase.toLowerCase()) || contactSearch.email.toLowerCase().includes(phrase.toLowerCase())
+            })
+        })
+    }
+}
 
 class Contact {
     constructor(name, surname, email) {
@@ -172,42 +129,36 @@ class Contact {
         this.updateDate();
     }
 }
-// Obiekt charakteryzujący grupę kontaktów:
-//     Ma mieć: listę kontaktów
-// Ma umożliwiać: Można zmienić nazwę grupy, można dodać lub usunac kontakt z grupy "
 
 class GroupContact {
     constructor(nameGroup) {
         Validator.isEmptyString(nameGroup);
         this.uuid = uuidv4();
         this.name = nameGroup;
-        // this.contacts = [] //wrzucam kontakty które przypisuje do grupy];
-    }
-    // TO REMOVE:
-    // addToGroup(...objContact) {
-    //     objContact.forEach(el => {
-    //         if (!Validator.isContact(el)) throw new Error(`obj contact doesnt't instance of class Contact`);
-    //         this.contactsInGroup.push(el);
-    //     })
-    // }
-
-
-
-
-    isContactInGroup(contactToCheck) {
-        // sprawdzenie czy kontakt istnieje
+        this.contacts = []
     }
 
-    addContacts(contact) {
-        //  validacja
-        //this.isContactInGroup()
-        //push kontakt
+
+    addContacts(...contacts) {
+        contacts.forEach(contact => {
+            if (!Validator.isContact(contact)) return `contact doesn't includes in object Contact`;
+            if (!this.contacts.find(contactFind => contactFind.uuid === contact.uuid)) {
+                this.contacts.push(contact)
+            } else {
+                return (`contact is in a group`)
+            }
+        })
     }
 
-    remove(contact) {
-        // validacja
-        //this.isContactInGroup(contact)
-        //filter !== contact.uuid
+    remove(...contacts) {
+        contacts.forEach(contact => {
+            if (!Validator.isContact(contact)) return `contact doesn't includes in object Contact`;
+            if (this.contacts.find(contactFind => contactFind.uuid === contact.uuid)) {
+                this.contacts = this.contacts.filter(contacRemove => contacRemove.uuid !== contact.uuid)
+            } else {
+                return `contact doesn't includes to list contacts`
+            }
+        })
     }
 
     changeNameGroup(nameGroup) {
@@ -222,20 +173,24 @@ const contact = new Contact('Piotr', "J", 'p.j@gmail.com')
 const contact2 = new Contact('Jarek', 'Michalczewsk', 'JM@interia.pl')
 const contact3 = new Contact('Darek', 'fdsfds', 'ewrw@interia.pl')
 const contact4 = new Contact('jacenty', 'zbysiu', 'KarolJM@interia.pl')
-const contact5 = new Contact('rodzinaName', 'zbysiu', 'KarolJM@interia.pl')
-const contact6 = new Contact('kuzyniName', 'zbysiu', 'KarolJM@interia.pl')
+const contact5 = new Contact('Marek', 'kowal', 'MAW@interia.pl')
+const contact6 = new Contact('Mariusz', 'karnia', 'MKA@gmail.pl')
+
 
 const groupFriends = new GroupContact('znajomi');
 const groupFamily = new GroupContact('rodzina');
-const groupFamily2 = new GroupContact('rodzina2');
+const groupWork = new GroupContact('praca');
 
-const adressBook = new AddressBook();
-adressBook.addContacts(contact, contact2, contact3, contact4, contact5, contact6);
-adressBook.addGroups(groupFriends);
-adressBook.addContactsToGroup(groupFriends, [contact]);
-adressBook.addContactsToGroup(groupFriends, [contact2, contact3]);
+groupFriends.addContacts(contact, contact2, contact3);
+groupFamily.addContacts(contact3, contact4);
+groupWork.addContacts(contact6, contact5)
+groupFriends.remove(contact2)
+groupFriends.remove(contact)
 
-adressBook.addContactsToGroup(groupFamily, [contact5, contact4, contact3])
-adressBook.addContactsToGroup(groupFamily2, [contact5])
-adressBook.removeContactFromGroup(contact5, contact3)
-console.log(adressBook);
+
+const addressBook = new AddressBook();
+addressBook.addContacts(contact, contact2, contact3, contact4, contact5, contact6)
+addressBook.addContacts(contact, contact2, contact3, contact4, contact5, contact6)
+addressBook.addGroups(groupFriends)
+addressBook.addGroups(groupFamily)
+addressBook.addGroups(groupWork)
